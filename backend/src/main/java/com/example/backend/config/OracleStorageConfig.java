@@ -18,16 +18,22 @@ import java.nio.file.Paths;
 @Configuration
 public class OracleStorageConfig {
 
-    // Object Storage 클라이언트를 Bean으로 등록
+    // application.properties 또는 yml에서 주입받기
+    @Value("${oracle.config.region}")
+    private String regionName;
+
     @Bean
     public ObjectStorage objectStorageClient() throws Exception {
-        // ~/.oci/config 파일 기반 인증
-        final String CONFIG_PATH = System.getProperty("user.home") + "/.oci/config";
-        final String PROFILE = "DEFAULT"; // config 파일 내 프로파일 이름
+        final String CONFIG_PATH = "C:\\.oci\\config";
+        final String PROFILE = "DEFAULT";
 
         AuthenticationDetailsProvider provider =
                 new ConfigFileAuthenticationDetailsProvider(CONFIG_PATH, PROFILE);
 
-        return new ObjectStorageClient(provider);
+        // ✅ 문자열 regionName을 Region enum으로 변환 후 설정
+        ObjectStorageClient client = new ObjectStorageClient(provider);
+        client.setRegion(Region.fromRegionId(regionName));
+
+        return client;
     }
 }
